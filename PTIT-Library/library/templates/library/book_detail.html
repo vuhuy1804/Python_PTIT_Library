@@ -1,0 +1,44 @@
+{% extends 'library/base.html' %}
+{% load static %}
+{% block title %}Thông tin tài liệu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center text-danger">Thông tin tài liệu</h2>
+
+  <div class="row g-4 align-items-start">
+    <!-- Cột thông tin -->
+    <div class="col-md-8">
+      <div class="card p-4 shadow-sm border-0">
+        <p><strong>Tên sách:</strong> {{ book.title }}</p>
+        <p><strong>Tác giả:</strong> {{ book.author }}</p>
+        <p><strong>Số lượng:</strong> {{ book.quantity }}</p>
+        <p><strong>Năm xuất bản:</strong> {{ book.publish_year }}</p>
+        <p><strong>Nhà xuất bản:</strong> {{ book.publisher }}</p>
+
+        <div class="mt-3">
+          {% if book.pdf %}
+            <a href="{{ book.pdf.url }}" target="_blank" class="btn btn-outline-primary me-2">Xem PDF</a>
+            <a href="{{ book.pdf.url }}" download class="btn btn-outline-success">Tải PDF</a>
+          {% else %}
+            <button class="btn btn-secondary" disabled>Không có file PDF</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột ảnh bìa -->
+    <div class="col-md-4 text-center">
+      {% if book.cover %}
+        <img src="{{ book.cover.url }}" alt="Bìa sách {{ book.title }}" 
+             class="img-fluid rounded shadow-sm" 
+             style="object-fit:contain; max-height:400px; background-color:#f8f9fa;">
+      {% else %}
+        <img src="{% static 'library/no_cover.png' %}" alt="Không có ảnh bìa" 
+             class="img-fluid rounded shadow-sm" 
+             style="object-fit:contain; max-height:400px; background-color:#f8f9fa;">
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Sách đã mượn{% endblock %}
+
+{% block content %}
+<h2>Sách bạn đang mượn</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tiêu đề</th>
+            <th>Tác giả</th>
+            <th>Ngày mượn</th>
+            <th>Ngày hạn trả</th>
+        </tr>
+    </thead>
+    <tbody>s
+        {% for borrow in borrows %}
+        <tr>
+            <td>{{ borrow.book.title }}</td>
+            <td>{{ borrow.book.author }}</td>
+            <td>{{ borrow.borrow_date|date:"d/m/Y" }}</td>
+            <td>{{ borrow.due_date|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Bạn chưa mượn sách nào.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

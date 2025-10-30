@@ -1,0 +1,179 @@
+{% extends 'library/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Quản lý mượn sách</h2>
+    <div class="card p-2 shadow-sm" style="min-width: 220px;">
+      <h6 class="text-center mb-2 fw-bold">Thông tin chi tiết</h6>
+      <p class="mb-1 text-center">Đang chờ: <strong>{{ count_pending }}</strong></p>
+      <p class="mb-1 text-center">Đang mượn: <strong>{{ count_active }}</strong></p>
+      <p class="mb-1 text-center">Quá hạn: <strong>{{ count_overdue }}</strong></p>
+      <p class="mb-0 text-center">Đã trả: <strong>{{ count_returned }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Nút lọc -->
+  <div class="btn-group mb-3" role="group">
+    <button type="button" class="btn btn-outline-danger active" id="btnPending">Đang chờ</button>
+    <button type="button" class="btn btn-outline-danger" id="btnActive">Đang mượn</button>
+    <button type="button" class="btn btn-outline-danger" id="btnOverdue">Quá hạn</button>
+    <button type="button" class="btn btn-outline-danger" id="btnReturned">Đã trả</button>
+  </div>
+
+  <!-- Bảng Đang chờ -->
+  <div id="tablePending">
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th>Mã mượn</th>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Ngày đăng ký</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in pending %}
+        <tr>
+          <td>{{ b.borrow_code }}</td>
+          <td>{{ b.book.title }}</td>
+          <td>{{ b.book.author }}</td>
+          <td>{{ b.borrow_date|date:"d/m/Y" }}</td>
+          <td>
+            <a href="{% url 'cancel_borrow' b.id %}"
+              class="btn btn-danger btn-sm"
+              onclick="return confirm('Xác nhận huỷ mượn sách \'{{ b.book.title }}\' ?');">
+              Huỷ
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted">Không có yêu cầu đang chờ.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bảng Đang mượn -->
+  <div id="tableActive" style="display: none;">
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th>Mã mượn</th>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Ngày đăng ký</th>
+          <th>Ngày hết hạn</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in active %}
+        <tr>
+          <td>{{ b.borrow_code }}</td>
+          <td>{{ b.book.title }}</td>
+          <td>{{ b.book.author }}</td>
+          <td>{{ b.borrow_date|date:"d/m/Y" }}</td>
+          <td>{{ b.due_date|date:"d/m/Y"|default:"-" }}</td>
+          <td>
+            {% if b.is_late %}
+              <span class="badge bg-danger">Quá hạn</span>
+            {% else %}
+              <span class="badge bg-success">Còn hạn</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Không có sách đang mượn.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bảng Quá hạn -->
+  <div id="tableOverdue" style="display: none;">
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th>Mã mượn</th>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Ngày đăng ký</th>
+          <th>Ngày hết hạn</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in overdue %}
+        <tr>
+          <td>{{ b.borrow_code }}</td>
+          <td>{{ b.book.title }}</td>
+          <td>{{ b.book.author }}</td>
+          <td>{{ b.borrow_date|date:"d/m/Y" }}</td>
+          <td>{{ b.due_date|date:"d/m/Y"|default:"-" }}</td>
+          <td><span class="badge bg-danger">Quá hạn</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Không có sách quá hạn.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bảng Đã trả -->
+  <div id="tableReturned" style="display: none;">
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th>Mã mượn</th>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Ngày đăng ký</th>
+          <th>Ngày hết hạn</th>
+          <th>Ngày trả</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in returned %}
+        <tr>
+          <td>{{ b.borrow_code }}</td>
+          <td>{{ b.book.title }}</td>
+          <td>{{ b.book.author }}</td>
+          <td>{{ b.borrow_date|date:"d/m/Y" }}</td>
+          <td>{{ b.due_date|date:"d/m/Y"|default:"-" }}</td>
+          <td>{{ b.return_date|date:"d/m/Y"|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Chưa có sách nào đã trả.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const btnPending = document.getElementById('btnPending');
+  const btnActive = document.getElementById('btnActive');
+  const btnOverdue = document.getElementById('btnOverdue');
+  const btnReturned = document.getElementById('btnReturned');
+  const tables = {
+    pending: document.getElementById('tablePending'),
+    active: document.getElementById('tableActive'),
+    overdue: document.getElementById('tableOverdue'),
+    returned: document.getElementById('tableReturned')
+  };
+  const buttons = { pending: btnPending, active: btnActive, overdue: btnOverdue, returned: btnReturned };
+
+  function showTable(selected) {
+    Object.values(tables).forEach(t => t.style.display = 'none');
+    Object.values(buttons).forEach(b => b.classList.remove('active'));
+    tables[selected].style.display = 'block';
+    buttons[selected].classList.add('active');
+  }
+
+  btnPending.onclick = () => showTable('pending');
+  btnActive.onclick = () => showTable('active');
+  btnOverdue.onclick = () => showTable('overdue');
+  btnReturned.onclick = () => showTable('returned');
+</script>
+{% endblock %}

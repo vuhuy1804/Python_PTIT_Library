@@ -1,0 +1,263 @@
+{% load static %}
+{% load tz %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Thư viện PTIT{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    .navbar-dark .navbar-nav .nav-link {
+      color: #fff !important;
+      font-weight: 500;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover {
+      color: #ffe6e6 !important;
+    }
+    .navbar-dark .navbar-brand {
+      font-weight: 600;
+      color: #fff !important;
+    }
+    .notif-badge {
+      font-size: 0.65rem;
+      padding: 0.25rem 0.45rem;
+    }
+    .notif-item.unread {
+      background-color: #ffe6e6;
+    }
+    .notif-item {
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .notif-item:hover {
+      background-color: #f8f9fa;
+    }
+    .load-more-btn {
+      text-align: center;
+      padding: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'home' %}">Thư viện PTIT</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'book_list' %}">Sách</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_borrows' %}">Quản lý mượn sách</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'attendance_history' %}">Lịch sử vào ra</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="d-flex align-items-center">
+        {% if user.is_authenticated %}
+        <!-- 🔔 Icon chuông -->
+        <div class="dropdown me-3 position-relative">
+          <a class="text-white text-decoration-none position-relative" href="#" id="notifDropdown"
+            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell" style="font-size: 1.25rem;"></i>
+            {% if unread_notifications > 0 %}
+              <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notif-badge">
+                {{ unread_notifications }}
+              </span>
+            {% endif %}
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notifDropdown"
+              style="width: 350px; max-height: 400px; overflow-y: auto;" id="notifList">
+            <li class="dropdown-header d-flex justify-content-between align-items-center">
+              <strong>Thông báo của tôi ({{ unread_notifications }})</strong>
+              <button id="markAllReadBtn" class="btn btn-link p-0 text-primary small">
+                <i class="bi bi-check2-all"></i> Đánh dấu đã đọc
+              </button>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+
+            {% if recent_notifications %}
+              {% for notif in recent_notifications %}
+              <li class="px-3 py-2 notif-item {% if not notif.is_read %}unread{% endif %}" data-id="{{ notif.id }}">
+                <div class="fw-bold text-danger" style="font-size: 0.9rem;">{{ notif.title }}</div>
+                <div style="font-size: 0.85rem;">{{ notif.message|truncatechars:80 }}</div>
+                <div class="text-muted small">{{ notif.created_at|localtime|date:"d/m/Y H:i" }}</div>
+              </li>
+              {% endfor %}
+              <li class="load-more-btn">
+                <button id="loadMoreBtn" class="btn btn-outline-secondary btn-sm">Tải thêm</button>
+              </li>
+            {% else %}
+              <li class="text-center text-muted py-3">Không có thông báo nào</li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- 👤 Dropdown tài khoản -->
+        <div class="dropdown">
+          <a class="text-white text-decoration-none dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'change_password' %}">Đổi mật khẩu</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'logout' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">Đăng xuất</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+        {% else %}
+          <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Đăng nhập</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% block fullwidth %}
+<div class="container mt-3">
+  {% if messages and request.resolver_match.url_name != 'attendance_history' and request.resolver_match.url_name != 'book_list'%}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-2">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}{% endblock %}
+</div>
+{% endblock %}
+
+<!-- 🪄 Modal thông báo -->
+<div class="modal fade" id="notifModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết thông báo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6 id="notifTitle"></h6>
+        <p id="notifMessage"></p>
+        <small class="text-muted" id="notifTime"></small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const csrfToken = '{{ csrf_token }}';
+  let currentOffset = 10;
+  let loading = false;
+
+  // 🧩 Giữ dropdown mở khi click bên trong
+  const notifList = document.getElementById('notifList');
+  notifList.addEventListener('click', e => e.stopPropagation());
+
+  // 🔹 Đánh dấu tất cả đã đọc
+  const markAllBtn = document.getElementById('markAllReadBtn');
+  if (markAllBtn) {
+    markAllBtn.addEventListener('click', () => {
+      fetch('{% url "mark_all_read" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken}
+      }).then(() => {
+        document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('unread'));
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.remove();
+        const header = document.querySelector('.dropdown-header strong');
+        if (header) header.textContent = "Thông báo của tôi (0)";
+      });
+    });
+  }
+
+  // 🔹 Xem chi tiết thông báo
+  function attachClickHandler(item) {
+    item.addEventListener('click', () => {
+      const id = item.dataset.id;
+      const wasUnread = item.classList.contains('unread');
+      fetch(`/notifications/${id}/read/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => response.json())
+      .then(data => {
+        item.classList.remove('unread');
+        if (wasUnread) {
+          const badge = document.getElementById('notifBadge');
+          let count = badge ? parseInt(badge.textContent) : 0;
+          if (badge) {
+            if (count > 1) {
+              badge.textContent = count - 1;
+              count -= 1;
+            } else {
+              badge.remove();
+              count = 0;
+            }
+          }
+          const header = document.querySelector('.dropdown-header strong');
+          if (header) header.textContent = `Thông báo của tôi (${count})`;
+        }
+        document.getElementById('notifTitle').textContent = data.title;
+        document.getElementById('notifMessage').textContent = data.message;
+        document.getElementById('notifTime').textContent = data.time;
+        const modal = new bootstrap.Modal(document.getElementById('notifModal'));
+        modal.show();
+      });
+    });
+  }
+
+  document.querySelectorAll('.notif-item').forEach(attachClickHandler);
+
+  // 🔹 Tải thêm
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (loading) return;
+      loading = true;
+      loadMoreBtn.textContent = "Đang tải...";
+
+      fetch(`/notifications/load_more/?offset=${currentOffset}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.notifications && data.notifications.length > 0) {
+            const loadMoreLi = loadMoreBtn.closest('li');
+            data.notifications.forEach(notif => {
+              const li = document.createElement('li');
+              li.className = `px-3 py-2 notif-item ${notif.is_read ? '' : 'unread'}`;
+              li.dataset.id = notif.id;
+              li.innerHTML = `
+                <div class="fw-bold text-danger" style="font-size: 0.9rem;">${notif.title}</div>
+                <div style="font-size: 0.85rem;">${notif.message}</div>
+                <div class="text-muted small">${notif.time}</div>
+              `;
+              notifList.insertBefore(li, loadMoreLi);
+              attachClickHandler(li);
+            });
+            currentOffset += data.notifications.length;
+          } else {
+            loadMoreBtn.textContent = "Không còn thông báo";
+            loadMoreBtn.disabled = true;
+          }
+        })
+        .finally(() => {
+          loading = false;
+          loadMoreBtn.textContent = "Tải thêm";
+        });
+    });
+  }
+});
+</script>
+</body>
+</html>

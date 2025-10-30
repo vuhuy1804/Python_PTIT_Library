@@ -1,0 +1,26 @@
+{% extends 'library/base.html' %}
+{% block title %}Top sinh viên{% endblock %}
+{% block content %}
+<h3 class="text-danger text-center mb-4">Top 10 sinh viên vào ra thư viện nhiều nhất</h3>
+<canvas id="topChart" height="100"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('topChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ labels|safe }},
+    datasets: [{
+      label: 'Số lượt vào ra',
+      data: {{ values|safe }},
+      borderWidth: 1,
+      backgroundColor: 'rgba(25, 135, 84, 0.7)',
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+{% endblock %}

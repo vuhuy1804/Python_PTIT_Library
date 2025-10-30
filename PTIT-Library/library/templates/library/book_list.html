@@ -1,0 +1,145 @@
+{% extends 'library/base.html' %}
+{% load static %}
+{% block title %}Danh mục sách{% endblock %}
+{% block content %}
+
+{% if messages %}
+  <div class="container mb-3">
+    {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<h2 class="text-center mb-4">Danh mục</h2>
+
+<!-- Ô tìm kiếm -->
+<form method="get" action="{% url 'book_list' %}" class="d-flex mb-3 align-items-center" style="gap: 8px;">
+    <input type="text" name="q" class="form-control" placeholder="Tìm theo tên tài liệu hoặc tác giả" value="{{ query|default:'' }}">
+    <button type="submit" class="btn btn-danger" style="white-space: nowrap;">Tìm kiếm</button>
+</form>
+
+{% if not query and collections %}
+  <h4 class="mb-3">Các bộ sưu tập</h4>
+
+
+  <div id="collectionContainer" class="row g-3">
+    {% for c in collections %}
+    <div class="col-md-4 col-sm-6">
+      <div class="card h-100 shadow-sm border-0">
+        {% if c.image %}
+          <img src="{{ c.image.url }}" class="card-img-top" style="height:200px;object-fit:contain;background-color:#f8f9fa;">
+        {% else %}
+          <img src="{% static 'library/no_cover.png' %}" class="card-img-top" style="height:180px;object-fit:contain;">
+        {% endif %}
+
+        <div class="card-body">
+          <h5 class="card-title text-danger">{{ c.name }}</h5>
+          <ul class="list-unstyled small mb-0">
+            {% for sub in c.subcollections.all %}
+              <li><a href="{% url 'subcollection_books' sub.id %}" class="text-decoration-none">{{ sub.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+{% elif page_obj %}
+  <!-- Kết quả tìm kiếm -->
+  <div class="row row-cols-1 row-cols-md-3 g-3">
+    {% for book in page_obj %}
+    <div class="col">
+      <div class="card h-100 shadow-sm border-0">
+        {% if book.cover %}
+          <img src="{{ book.cover.url }}" class="card-img-top" style="height:200px;object-fit:contain;background-color:#f8f9fa;">
+        {% else %}
+          <img src="{% static 'library/no_cover.png' %}" class="card-img-top" style="height:200px;object-fit:contain;">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title"><a href="{% url 'book_detail' book.id %}" class="text-decoration-none text-danger">{{ book.title }}</a></h5>
+          <p class="text-muted small">{{ book.author }}</p>
+          <!-- Thêm hiển thị Số lượng và Trạng thái -->
+          <p class="small mb-2">
+            <strong>Số lượng:</strong> {{ book.quantity }}<br>
+            <strong>Trạng thái:</strong>
+            {% if book.quantity|default:0 > 0 %}
+              <span class="text-success">Còn sách</span>
+            {% else %}
+              <span class="text-danger">Sách hết</span>
+            {% endif %}
+          </p>
+
+          {% if user.is_authenticated %}
+            {% if book.collection.name in "Bài giảng,Giáo trình,Sách danh nhân,Sách tâm lý - kỹ năng,Sách giải trí - giáo dục" %}
+              {% if book.quantity > 0 %}
+                <a href="{% url 'register_borrow' book.id %}"
+                  class="btn btn-sm btn-danger"
+                  onclick="return confirm('Xác nhận đăng ký mượn sách {{ book.title }}?');">
+                  Đăng ký mượn
+                </a>
+              {% else %}
+                <button class="btn btn-secondary btn-sm" disabled>Hết sách</button>
+              {% endif %}
+            {% else %}
+              {% if book.pdf %}
+                <a href="{{ book.pdf.url }}" target="_blank" class="btn btn-outline-primary btn-sm">Xem PDF</a>
+              {% else %}
+                <button class="btn btn-secondary btn-sm" disabled>Chưa có file PDF</button>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <a href="{% url 'login' %}" class="btn btn-warning btn-sm">Đăng nhập để mượn</a>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+    {% empty %}
+      <p>Không tìm thấy sách nào.</p>
+    {% endfor %}
+  </div>
+
+{% endif %}
+
+<script>
+const gridBtn = document.getElementById('gridBtn');
+const listBtn = document.getElementById('listBtn');
+const container = document.getElementById('collectionContainer');
+if (gridBtn && listBtn && container) {
+  gridBtn.addEventListener('click', () => {
+    container.classList.remove('list-view');
+    gridBtn.classList.add('active');
+    listBtn.classList.remove('active');
+  });
+  listBtn.addEventListener('click', () => {
+    container.classList.add('list-view');
+    listBtn.classList.add('active');
+    gridBtn.classList.remove('active');
+  });
+}
+</script>
+
+<style>
+.list-view .card {
+  flex-direction: row;
+  height: 140px;
+}
+.list-view .card img {
+  width: 160px;
+  height: 100%;
+  object-fit: cover;
+}
+.list-view .card-body {
+  flex: 1;
+}
+.active {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+</style>
+{% endblock %}

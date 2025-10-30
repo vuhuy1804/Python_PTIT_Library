@@ -1,0 +1,154 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block title %}Thư viện PTIT{% endblock %}
+
+{% block content %}
+<style>
+  .hero {
+    background-image: url("{% static 'library/images/banner.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    height: 600px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    margin-top: 10px;
+  }
+  .feature-icon {
+    font-size: 2rem;
+    color: #dc3545;
+    margin-bottom: 10px;
+  }
+  .news-item:hover {
+    background-color: #f8f9fa;
+    transition: 0.2s ease;
+  }
+  .footer-info h5 {
+    font-weight: 700;
+    color: #b71c1c;
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<!-- 🔻 Banner giới thiệu -->
+<div class="hero mb-5">
+  
+</div>
+
+<!-- 🔻 Các tính năng chính -->
+<div class="container text-center mb-5">
+  <div class="row justify-content-center g-4">
+    <div class="col-md-3 col-6">
+      <i class="bi bi-book feature-icon"></i>
+      <h6>Sách học tập</h6>
+      <p class="text-muted small">Tìm kiếm và đăng ký mượn sách nhanh chóng.</p>
+    </div>
+    <div class="col-md-3 col-6">
+      <i class="bi bi-person-lines-fill feature-icon"></i>
+      <h6>Quản lý mượn</h6>
+      <p class="text-muted small">Theo dõi tình trạng mượn trả mọi lúc mọi nơi.</p>
+    </div>
+    <div class="col-md-3 col-6">
+      <i class="bi bi-bell feature-icon"></i>
+      <h6>Thông báo tự động</h6>
+      <p class="text-muted small">Nhận nhắc nhở trả sách và tin mới từ thư viện.</p>
+    </div>
+    <div class="col-md-3 col-6">
+      <i class="bi bi-file-earmark-text feature-icon"></i>
+      <h6>Tài liệu số</h6>
+      <p class="text-muted small">Xem và tải tài liệu PDF trực tiếp trên hệ thống.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 🔻 Tin tức - Thông báo -->
+<div class="container mb-5">
+  <h3 class="text-center text-danger mb-4">Tin tức - Thông báo</h3>
+  <div class="list-group shadow-sm rounded">
+    <a href="#" class="list-group-item list-group-item-action news-item">
+      <strong>📢 Thông báo mở cửa phục vụ ngoài giờ</strong>
+      <br><small class="text-muted">Thư viện PTIT sẽ mở cửa phục vụ thêm khung giờ 18h00 - 21h00 các ngày thứ 2 đến thứ 7 hàng tuần.</small>
+    </a>
+    <a href="#" class="list-group-item list-group-item-action news-item">
+      <strong>📢 Thông báo cấp tài khoản truy cập thư viện số cho khóa D25 chính quy</strong>
+      <br><small class="text-muted">Sinh viên khóa D25 có thể đăng nhập hệ thống thư viện số để tra cứu và tải tài liệu học tập.</small>
+    </a>
+    <a href="#" class="list-group-item list-group-item-action news-item">
+      <strong>📢 Hướng dẫn đăng ký mượn sách trực tuyến</strong>
+      <br><small class="text-muted">Sinh viên có thể đăng ký mượn sách trực tuyến qua mục "Danh mục sách" trên trang chủ.</small>
+    </a>
+    <a href="#" class="list-group-item list-group-item-action news-item">
+      <strong>📢 Cập nhật giao diện mới cho hệ thống thư viện</strong>
+      <br><small class="text-muted">Hệ thống thư viện PTIT đã được nâng cấp với giao diện hiện đại và tối ưu.</small>
+    </a>
+  </div>
+</div>
+
+<!-- 🔻 Thông tin liên hệ -->
+<div class="container footer-info mt-5 mb-4">
+  <h5 class="text-center mb-4">TRUNG TÂM THÔNG TIN THƯ VIỆN – HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h5>
+  <div class="row">
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Trụ sở chính:</strong><br>
+      122 Hoàng Quốc Việt, Q.Cầu Giấy, Hà Nội</p>
+
+      <p class="mb-1"><strong>Cơ sở đào tạo tại Hà Nội:</strong><br>
+      Km10, Đường Nguyễn Trãi, Q.Hà Đông, Hà Nội</p>
+    </div>
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Học viện cơ sở tại TP Hồ Chí Minh:</strong><br>
+      11 Nguyễn Đình Chiểu, P.Đa Kao, Q.1, TP Hồ Chí Minh</p>
+
+      <p class="mb-3"><strong>Cơ sở đào tạo tại TP Hồ Chí Minh:</strong><br>
+      Đường Man Thiên, P.Hiệp Phú, Q.9, TP Hồ Chí Minh</p>
+    </div>
+  </div>
+
+  <!-- 🔹 Liên hệ -->
+  <div class="text-center mt-4">
+    <h6 class="fw-bold text-danger mb-2">Liên hệ</h6>
+    <p class="mb-1">
+      <i class="bi bi-facebook text-primary me-1"></i>
+      <a href="https://www.facebook.com/ptitl" target="_blank" class="text-decoration-none text-dark">
+        Thư viện PTIT
+      </a>
+    </p>
+    <p class="mb-0">
+      <i class="bi bi-envelope-fill text-danger me-1"></i>
+      <a href="mailto:ilc@ptit.edu.vn" class="text-decoration-none text-dark">
+        ilc@ptit.edu.vn
+      </a>
+    </p>
+  </div>
+</div>
+
+<!-- 🔻 Footer -->
+<footer class="text-center py-4 bg-light mt-5 border-top">
+  <p class="mb-0 small text-muted">
+    © 2025 Học viện Công nghệ Bưu Chính Viễn Thông – PTIT
+  </p>
+</footer>
+{% endblock %}

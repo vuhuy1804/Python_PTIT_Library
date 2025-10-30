@@ -1,0 +1,90 @@
+{% extends 'library/base.html' %}
+{% load static %}
+{% block title %}{{ sub.name }}{% endblock %}
+{% block content %}
+<h4 class="mb-4 text-danger">{{ sub.collection.name }} / {{ sub.name }}</h4>
+
+<!-- Phân trang (đầu trang) -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation example" class="mb-3">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link text-danger" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == page_obj.number %}
+        <li class="page-item active"><span class="page-link bg-danger border-danger">{{ num }}</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link text-danger" href="?page={{ num }}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link text-danger" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<div class="row row-cols-1 row-cols-md-3 g-3">
+  {% for book in page_obj %}
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      {% if book.cover %}
+        <img src="{{ book.cover.url }}" class="card-img-top" style="height:200px;object-fit:contain;background-color:#f8f9fa;">
+      {% else %}
+        <img src="{% static 'library/no_cover.png' %}" class="card-img-top" style="height:200px;object-fit:contain;">
+      {% endif %}
+      <div class="card-body">
+        <h5 class="card-title text-danger"><a href="{% url 'book_detail' book.id %}" class="text-decoration-none">{{ book.title }}</a></h5>
+        <p class="text-muted small">{{ book.author }}</p>
+        <!-- Thêm hiển thị Số lượng và Trạng thái -->
+        <p class="small mb-2">
+          <strong>Số lượng:</strong> {{ book.quantity }}<br>
+          <strong>Trạng thái:</strong>
+          {% if book.quantity|default:0 > 0 %}
+            <span class="text-success">Còn sách</span>
+          {% else %}
+            <span class="text-danger">Sách hết</span>
+          {% endif %}
+        </p>
+
+        {% if user.is_authenticated %}
+          {% if book.collection.name in "Bài giảng,Giáo trình,Sách danh nhân,Sách tâm lý - kỹ năng,Sách giải trí - giáo dục" %}
+            {% if book.quantity > 0 %}
+              <a href="{% url 'register_borrow' book.id %}"
+                class="btn btn-sm btn-danger"
+                onclick="return confirm('Xác nhận đăng ký mượn sách {{ book.title }}?');">
+                Đăng ký mượn
+              </a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>Hết sách</button>
+            {% endif %}
+          {% else %}
+            {% if book.pdf %}
+              <a href="{{ book.pdf.url }}" target="_blank" class="btn btn-outline-primary btn-sm">Xem PDF</a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>Chưa có file PDF</button>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-warning btn-sm">Đăng nhập để mượn</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p>Không có sách nào trong mục này.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'library/base.html' %}
+{% block title %}Điểm danh vào/ra{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center">
+  <h3 class="text-danger mb-4">Nhập mã điểm danh</h3>
+  <form method="POST">
+    {% csrf_token %}
+    <input type="text" name="code" class="form-control text-center mb-3" maxlength="6"
+           placeholder="Nhập mã 6 số" style="max-width:200px; margin:auto;">
+    <button type="submit" class="btn btn-success px-4">Xác nhận điểm danh</button>
+  </form>
+</div>
+{% endblock %}

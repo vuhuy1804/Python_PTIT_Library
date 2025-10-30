@@ -1,0 +1,26 @@
+{% extends 'library/base.html' %}
+{% block title %}Thống kê vào ra{% endblock %}
+{% block content %}
+<h3 class="text-danger text-center mb-4">Thống kê số lượt vào ra 10 tháng gần nhất</h3>
+<canvas id="attendanceChart" height="100"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('attendanceChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ labels|safe }},
+    datasets: [{
+      label: 'Số lượt vào ra',
+      data: {{ values|safe }},
+      borderWidth: 1,
+      backgroundColor: 'rgba(220, 53, 69, 0.7)',
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'library/base.html' %}
+{% block title %}Thông báo của tôi{% endblock %}
+
+{% block content %}
+<h3>
+    Thông báo của tôi ({{ unread_count }} chưa đọc)
+    <a href="{% url 'mark_all_read' %}" class="btn btn-sm btn-outline-primary float-end">
+        Đánh dấu tất cả là đã đọc
+    </a>
+</h3>
+<hr>
+
+{% for n in notifications %}
+<div class="card mb-2 {% if not n.is_read %}border-primary{% endif %}">
+    <div class="card-body">
+        <h5>{{ n.title }}</h5>
+        <p>{{ n.message }}</p>
+        <small class="text-muted">{{ n.created_at|date:"d/m/Y H:i" }}</small>
+    </div>
+</div>
+{% empty %}
+<p>Không có thông báo nào.</p>
+{% endfor %}
+{% endblock %}

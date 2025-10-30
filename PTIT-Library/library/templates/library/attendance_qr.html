@@ -1,0 +1,51 @@
+{% extends "library/base.html" %}
+{% block title %}Mã QR điểm danh{% endblock %}
+{% block content %}
+<div class="container text-center">
+  <h2 class="text-danger mb-3">Mã QR điểm danh thư viện</h2>
+  <p class="text-muted">Mã sẽ tự động thay đổi sau mỗi <strong>5 giây</strong>.</p>
+
+  <div id="qr-box" class="p-4 border rounded-3 shadow-sm d-inline-block bg-light">
+    <img id="qr-image" src="" alt="QR Code" width="250" height="250" class="mb-3">
+    <h3 id="qr-code-text" class="text-danger fw-bold"></h3>
+    <p id="qr-time" class="text-muted small"></p>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
+
+async function updateQRCode() {
+  try {
+    const response = await fetch("{% url 'generate_qr_code' %}", {
+      method: "GET",
+      headers: { "X-CSRFToken": csrftoken },
+      credentials: "same-origin"   // giữ session đăng nhập
+    });
+    const data = await response.json();
+    document.getElementById("qr-image").src = data.qr_image;
+    document.getElementById("qr-code-text").innerText = data.code;
+    document.getElementById("qr-time").innerText = "Cập nhật lúc " + data.generated_at;
+  } catch (err) {
+    console.error("Lỗi khi tải mã QR:", err);
+  }
+}
+
+updateQRCode();
+setInterval(updateQRCode, 5000);
+</script>
+{% endblock %}

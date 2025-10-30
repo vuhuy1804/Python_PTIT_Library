@@ -1,0 +1,94 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Căn giữa toàn bộ nội dung bảng */
+  table.table th, table.table td {
+      text-align: center;
+      vertical-align: middle;
+      font-size: 14px;
+      padding: 10px 8px;
+  }
+  
+  /* Tăng khoảng cách giữa các dòng và độ thoáng tổng thể */
+  body, table, h1, h2, h3, p, td, th {
+      line-height: 1.7;
+  }
+
+  /* Giãn khoảng cách giữa các phần chính */
+  .card {
+      margin-bottom: 2rem;
+  }
+
+  /* Giãn khoảng cách giữa 2 cột (Top 10 / Quá hạn) */
+  .col-md-6 {
+      padding: 0 20px;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white fw-bold">Top 10 sách đang được mượn nhiều nhất</div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped text-center align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tên sách</th>
+                <th>Số lượt mượn</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for book in top_books %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ book.book__title }}</td>
+                  <td>{{ book.total }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="3">Không có dữ liệu.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white fw-bold">Các lượt mượn đã quá hạn</div>
+        <div class="card-body">
+          <a href="{% url 'admin:export_overdue_to_excel' %}" class="btn btn-success mb-3">
+            Xuất Excel
+          </a>
+          <table class="table table-bordered table-striped text-center align-middle">
+            <thead>
+              <tr>
+                <th>Mã mượn</th>
+                <th>Người mượn</th>
+                <th>Tên sách</th>
+                <th>Hạn trả</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in overdue_borrows %}
+                <tr>
+                  <td>{{ b.borrow_code }}</td>
+                  <td>{{ b.user.username }}</td>
+                  <td>{{ b.book.title }}</td>
+                  <td>{{ b.due_date|date:"d/m/Y" }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4">Không có lượt mượn quá hạn.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

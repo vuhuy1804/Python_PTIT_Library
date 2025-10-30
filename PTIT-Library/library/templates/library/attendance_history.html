@@ -1,0 +1,112 @@
+{% extends 'library/base.html' %}
+{% block title %}Lịch sử vào ra{% endblock %}
+{% block content %}
+<h2 class="text-danger mb-4">Lịch sử vào ra thư viện</h2>
+
+<!-- Thông báo messages -->
+{% if messages %}
+  <div class="mt-2">
+    {% for message in messages %}
+      <div class="alert 
+        {% if message.tags == 'error' %}alert-danger
+        {% elif message.tags == 'success' %}alert-success
+        {% elif message.tags == 'info' %}alert-info
+        {% else %}alert-secondary{% endif %}
+        alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Bộ lọc và nút chức năng -->
+<form method="get" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <label>Từ ngày:</label>
+  <input type="date" name="start" value="{{ start_date }}" class="form-control" style="width: 180px;">
+  <label>Đến ngày:</label>
+  <input type="date" name="end" value="{{ end_date }}" class="form-control" style="width: 180px;">
+  <button type="submit" class="btn btn-danger">Lọc</button>
+  <a href="{% url 'attendance_statistics' %}" class="btn btn-outline-primary">Thống kê</a>
+  <a href="{% url 'attendance_top' %}" class="btn btn-outline-success">Top thống kê</a>
+  <span class="ms-auto fw-bold">Tổng số: {{ total_count }}</span>
+</form>
+
+<!-- Nút Điểm danh -->
+<div class="mb-3 text-end">
+  <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#attendanceModal">
+    Điểm danh
+  </button>
+</div>
+
+<!-- Modal nhập mã điểm danh -->
+<div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="attendanceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'attendance_check_code' %}">
+        {% csrf_token %}
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="attendanceModalLabel">Nhập mã điểm danh</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Vui lòng nhập mã 6 số được hiển thị tại thư viện để điểm danh vào/ra.</p>
+          <input type="text" name="code" maxlength="6" class="form-control text-center fs-4" placeholder="Nhập mã 6 số" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Xác nhận</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bảng danh sách -->
+<table class="table table-striped align-middle text-center">
+  <thead class="table-danger">
+    <tr>
+      <th>STT</th>
+      <th>Buổi</th>
+      <th>Thời gian vào</th>
+      <th>Thời gian ra</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in page_obj %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ log.shift }}</td>
+      <td>{{ log.check_in|date:"d/m/Y H:i" }}</td>
+      <td>
+        {% if log.check_out %}
+          {{ log.check_out|date:"d/m/Y H:i" }}
+        {% else %}
+          <span class="text-muted">Chưa ra</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-muted">Chưa có lịch sử vào ra.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Phân trang -->
+<div class="d-flex justify-content-center align-items-center gap-2 mt-3">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&start={{ start_date }}&end={{ end_date }}" class="btn btn-light">&lt;</a>
+  {% endif %}
+  {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+      <span class="btn btn-danger active">{{ num }}</span>
+    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+      <a href="?page={{ num }}&start={{ start_date }}&end={{ end_date }}" class="btn btn-light">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&start={{ start_date }}&end={{ end_date }}" class="btn btn-light">&gt;</a>
+  {% endif %}
+</div>
+{% endblock %}
